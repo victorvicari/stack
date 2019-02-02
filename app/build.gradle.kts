@@ -56,6 +56,7 @@ dependencies {
     implementation(Dep.androidxExtensions)
     implementation(Dep.constraintLayout)
     implementation(Dep.materialComponents)
+    implementation(Dep.paging)
 
     // glide
     implementation(Dep.glide)
