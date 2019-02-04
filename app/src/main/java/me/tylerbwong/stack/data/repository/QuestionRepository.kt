@@ -1,5 +1,6 @@
 package me.tylerbwong.stack.data.repository
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -18,6 +19,12 @@ class QuestionRepository(private val stackDatabase: StackDatabase = StackDatabas
 
     private val questionDao by lazy { stackDatabase.getQuestionDao() }
     private val userDao by lazy { stackDatabase.getUserDao() }
+
+    suspend fun getPagedQuestions(@Sort sort: String, pageSize: Int, page: Int) : List<Question> {
+        return ServiceProvider.questionService.getQuestions(sort = sort, pageSize = pageSize, page = page)
+                .await()
+                .items
+    }
 
     suspend fun getQuestions(sort: String): ReceiveChannel<List<Question>> {
         val channel = Channel<List<Question>>(2)
@@ -71,4 +78,7 @@ class QuestionRepository(private val stackDatabase: StackDatabase = StackDatabas
         userDao.insert(users)
         questionDao.insert(questions)
     }
+
+    fun getPagedQuestionsFactory(scope: CoroutineScope, @Sort sort: String) : QuestionDataSourceFactory
+        = QuestionDataSourceFactory(scope, this, sort)
 }

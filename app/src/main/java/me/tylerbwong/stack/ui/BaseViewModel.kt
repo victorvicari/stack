@@ -19,7 +19,7 @@ abstract class BaseViewModel : ViewModel() {
     private val _snackbar = MutableLiveData<String?>()
 
     private val job = Job()
-    private val uiScope = CoroutineScope(Dispatchers.Main + job)
+    internal val uiScope = CoroutineScope(Dispatchers.Main + job)
 
     protected fun launchRequest(block: suspend () -> Unit): Job {
         return uiScope.launch {

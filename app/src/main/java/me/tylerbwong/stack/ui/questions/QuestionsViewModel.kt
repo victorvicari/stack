@@ -2,6 +2,8 @@ package me.tylerbwong.stack.ui.questions
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.switchMap
+import androidx.paging.LivePagedListBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.tylerbwong.stack.data.model.CREATION
@@ -16,21 +18,20 @@ internal class QuestionsViewModel(
         private val service: QuestionService = ServiceProvider.questionService
 ) : BaseViewModel() {
 
+    private val currentSort = MutableLiveData<@Sort String>()
+    internal val pagedQuestions = switchMap(currentSort) { currentSort ->
+        val factory = repository.getPagedQuestionsFactory(uiScope, currentSort).map { QuestionDataModel(it) }
+        LivePagedListBuilder(factory, PAGE_SIZE).build()
+    }
+
     internal val questions: LiveData<List<QuestionDataModel>>
         get() = _questions
     private val _questions = MutableLiveData<List<QuestionDataModel>>()
 
-    @Sort
-    internal var currentSort: String = CREATION
     internal var currentQuery: String = ""
 
-    internal fun getQuestions(@Sort sort: String = currentSort) {
-        currentSort = sort
-        launchRequest {
-            for (list in repository.getQuestions(sort)) {
-                _questions.value = list.map { QuestionDataModel(it) }
-            }
-        }
+    internal fun getQuestions(@Sort sort: String) {
+        currentSort.postValue(sort)
     }
 
     internal fun searchQuestions(query: String = currentQuery) {
@@ -49,7 +50,7 @@ internal class QuestionsViewModel(
         if (currentQuery.isNotBlank()) {
             searchQuestions()
         } else {
-            getQuestions()
+            refreshQuestions()
         }
     }
 
@@ -57,9 +58,17 @@ internal class QuestionsViewModel(
         currentQuery = newText ?: ""
 
         if (currentQuery.isBlank()) {
-            getQuestions()
+            refreshQuestions()
         }
     }
 
     internal fun isQueryBlank() = currentQuery.isBlank()
+
+    internal fun refreshQuestions() {
+        currentSort.postValue(currentSort.value ?: CREATION)
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 30
+    }
 }
