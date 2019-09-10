@@ -1,13 +1,6 @@
 package me.tylerbwong.stack.data.network.service
 
-import me.tylerbwong.stack.data.model.Answer
-import me.tylerbwong.stack.data.model.ORDER_PARAM
-import me.tylerbwong.stack.data.model.Order
-import me.tylerbwong.stack.data.model.Question
-import me.tylerbwong.stack.data.model.RELEVANCE
-import me.tylerbwong.stack.data.model.Response
-import me.tylerbwong.stack.data.model.SORT_PARAM
-import me.tylerbwong.stack.data.model.Sort
+import me.tylerbwong.stack.data.model.*
 import me.tylerbwong.stack.data.network.ServiceProvider
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -80,6 +73,16 @@ interface QuestionService {
             @Query(FILTER_PARAM) filter: String = DETAIL_FILTER,
             @Query(KEY_PARAM) key: String = ServiceProvider.DEFAULT_KEY
     ): Response<Answer>
+
+    @GET("/answers/{ids}/comments")
+    suspend fun getQuestionComments(
+            @Path("id") answerId: Int,
+            @Query(ORDER_PARAM) @Order order: String = DEFAULT_ORDER,
+            @Query(PAGE_SIZE_PARAM) pageSize: Int = DEFAULT_PAGE_SIZE,
+            @Query(PAGE_PARAM) page: Int = DEFAULT_PAGE,
+            @Query(FILTER_PARAM) filter: String = DETAIL_FILTER,
+            @Query(KEY_PARAM) key: String = ServiceProvider.DEFAULT_KEY
+    ): Response<Comment>
 
     @GET("search/advanced")
     suspend fun getQuestionsBySearchString(
